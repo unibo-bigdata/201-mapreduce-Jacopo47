@@ -60,6 +60,7 @@ public class WordCount {
 
 		job.setJarByClass(WordCount.class);
 		job.setMapperClass(TokenizerMapper.class);
+		job.setCombinerClass(IntSumReducer.class);
 		
 		if(args.length>2){
 			if(Integer.parseInt(args[2])>=0){
