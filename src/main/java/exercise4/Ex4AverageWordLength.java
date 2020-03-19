@@ -1,6 +1,8 @@
 package exercise4;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.StringTokenizer;
+import java.util.stream.StreamSupport;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -17,12 +19,15 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 public class Ex4AverageWordLength {
 
 	public static class Ex4Mapper extends Mapper<Object, Text, Text, IntWritable> {
-
-		private Text word = new Text(), firstLetter = new Text();
-		private IntWritable wordLength = new IntWritable();
-
+		private Text word = new Text();
 		public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-			//TODO mapper code
+			StringTokenizer iterator = new StringTokenizer(value.toString());
+			while (iterator.hasMoreTokens()) {
+				word.set(iterator.nextToken());
+				Text returnKey = new Text(word.toString().substring(0, 1).toLowerCase());
+				IntWritable returnValue = new IntWritable(word.getLength());
+				context.write(returnKey, returnValue);
+			}
 		}
 	}
 
@@ -30,7 +35,14 @@ public class Ex4AverageWordLength {
 
 		public void reduce(Text key, Iterable<IntWritable> values, Context context)
 				throws IOException, InterruptedException {
-			//TODO reducer code
+			double length = 0;
+			double total = 0;
+			for (IntWritable val : values) {
+				total += val.get();
+				length++;
+			}
+
+			context.write(key, new DoubleWritable(total / length));
 		}
 	}
 
